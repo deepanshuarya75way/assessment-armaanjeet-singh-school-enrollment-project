@@ -51,6 +51,7 @@ export const reportService = {
 
   askAiQuery: async (payload: AIQueryRequest): Promise<AIQueryResponse> => {
     const response = await api.post<AIQueryResponse>('/reports/ai-query', {
+      session_id: payload.session_id,   
       question: payload.question.trim(),
       target_date: payload.target_date, 
     });

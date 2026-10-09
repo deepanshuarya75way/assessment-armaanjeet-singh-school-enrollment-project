@@ -7,6 +7,7 @@ from typing import Optional
 class GenerateReportRequest(BaseModel):
     report_month: date
 class AIReportQueryRequest(BaseModel):
+    session_id : str
     question: str
     target_date : date
 class AIReportQueryResponse(BaseModel):

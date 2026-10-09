@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES : int 
     REFRESH_TOKEN_EXPIRE_DAYS : int 
     AI_API_KEY: str = ""
-    AI_MODEL: str = ""
+    AI_MODEL: str = "openai/gpt-oss-120b"
     
     class Config:
         env_file = '.env',

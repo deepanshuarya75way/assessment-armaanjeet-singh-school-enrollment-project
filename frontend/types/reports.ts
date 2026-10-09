@@ -26,6 +26,7 @@ export interface ReportDetailResponse extends ReportResponse {
 }
 
 export interface AIQueryRequest {
+  session_id : string,
   question: string;
   target_date: string; // ISO date format: YYYY-MM-DD
 }

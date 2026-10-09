@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Sparkles, Send, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Send, Loader2, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { reportService } from '@/services/reports';
 
@@ -12,6 +12,13 @@ export function AIReportQueryWidget() {
   );
   const [loading, setLoading] = useState(false);
   const [answer, setAnswer] = useState<string | null>(null);
+  
+ 
+  const [sessionId, setSessionId] = useState<string>('');
+
+  useEffect(() => {
+    setSessionId(crypto.randomUUID());
+  }, [targetDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,15 +27,25 @@ export function AIReportQueryWidget() {
     setLoading(true);
     try {
       const res = await reportService.askAiQuery({
+        session_id: sessionId,
         question: question.trim(),
         target_date: targetDate,
       });
       setAnswer(res.answer);
+      setQuestion(''); 
     } catch (err: any) {
       toast.error(err.response?.data?.detail || 'Failed to get AI insight');
     } finally {
       setLoading(false);
     }
+  };
+
+  // 4. Utility to manually flush conversation context locally and on the backend slate
+  const handleResetSession = () => {
+    setSessionId(crypto.randomUUID());
+    setAnswer(null);
+    setQuestion('');
+    toast.success('Chat memory reset successfully');
   };
 
   return (
@@ -44,15 +61,29 @@ export function AIReportQueryWidget() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-500 font-medium">Target Date:</label>
-          <input
-            type="date"
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-            className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
-          />
+        <div className="flex items-center gap-3">
+          {answer && (
+            <button
+              type="button"
+              onClick={handleResetSession}
+              className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-600 shadow-sm hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              title="Reset Chat Memory"
+            >
+              <RefreshCw className="h-3 w-3" />
+              <span>Reset</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-gray-500 font-medium whitespace-nowrap">Target Date:</label>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
         </div>
       </div>
 
@@ -61,7 +92,7 @@ export function AIReportQueryWidget() {
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="e.g. Which schools showed a decline in enrollment compared to previous records?"
+          placeholder={answer ? "Ask a follow-up question..." : "e.g. Which schools showed a decline in enrollment?"}
           className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
           required
         />
@@ -71,7 +102,7 @@ export function AIReportQueryWidget() {
           className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors whitespace-nowrap"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          <span>Ask</span>
+          <span>{answer ? 'Reply' : 'Ask'}</span>
         </button>
       </form>
 

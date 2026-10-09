@@ -10,6 +10,7 @@ from app.database import Base, get_async_db_url
 from app.models.users import User
 from app.models.school import School
 from app.models.reports import Report, ReportData
+from app.models.chats import ChatMessage
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
